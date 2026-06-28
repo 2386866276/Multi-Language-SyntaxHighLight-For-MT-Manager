@@ -1,0 +1,129 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Java-Kotlin-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["HTML", ".html", ".htm"],
+    ignoreCase: true,
+
+    // ====== 通用注释定义（原始的 comment 配置） ======
+    comment: {startsWith: "<!--", endsWith: "-->"},
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,   // 代替 attrName
+        "method"         #0039e6 #57b3ff,
+        "annotation"     #cc5e00 #ffb373,   // 代替 meta
+        "nodeReference"  #2e8c00 #63c259,   // 代替 namespace
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,   // 代替 tagName
+        "contorKeyword"  #bd1fcc #ff8ccc,
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,
+        "critical"       #cc2424 #c45959,   // 代替 error
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66    // 代替 strEscape
+    ],
+
+    bracketPairs: ["<>", "{}", "[]", "()"],
+
+    defines: [
+        "tagAttributes": [
+            {match: /(?s)<!--.*?(-->|$)/, 0: "comment"},
+            {match: /(xmlns:)([^='"\s]+)/, 1: "member", 2: "nodeReference"},
+            {match: /(?:([^='"<\/>\s]+)(:))?([^='"<\/>\s]+)/, 1: "nodeReference", 2: "member", 3: "member"},
+            {
+                group: link,
+                contains: [
+                    {match: /=\s*/, 0: "operator"},
+                    {match: /(?s)(["']).*?\1/, 0: "string"}
+                ]
+            }
+        ],
+
+        "entityReferences": [
+            {match: /&(?:amp|gt|lt|quot|apos|nbsp|copy|reg|trade|euro|cent|pound|yen|deg|plusmn|times|divide|hellip|mdash|ndash|lsquo|rsquo|ldquo|rdquo|bull|middot|sect|para|dagger|Dagger|permil|prime|Prime|lsaquo|rsaquo|oline|frasl|weierp|image|real|alefsym|larr|uarr|rarr|darr|harr|crarr|lArr|uArr|rArr|dArr|hArr|forall|part|exist|empty|nabla|isin|notin|ni|prod|sum|minus|lowast|radic|prop|infin|ang|and|or|cap|cup|int|there4|sim|cong|asymp|ne|equiv|le|ge|sub|sup|nsub|sube|supe|oplus|otimes|perp|sdot|lceil|rceil|lfloor|rfloor|lang|rang|loz|spades|clubs|hearts|diams);/, 0: "placeholder"},
+            {match: /&#\d+;/, 0: "placeholder"},
+            {match: /&#x[0-9a-fA-F]+;/, 0: "placeholder"},
+            {match: /&[a-zA-Z0-9#]*;?/, 0: "critical"}
+        ]
+    ],
+
+    contains: [
+        // HTML 注释（contains 中的版本，与顶层 comment 配合使用）
+        {
+            start: {match: /<!--/},
+            end: {match: /-->|$/},
+            style: "comment"
+        },
+        // DOCTYPE
+        {
+            start: {match: /<!(DOCTYPE|doctype)\b/, 1: "keyword"},
+            end: {match: />|$/},
+            style: "annotation",
+            contains: [
+                {match: /(PUBLIC|SYSTEM|"[^"]*"|'[^']*')/, 0: "string"}
+            ]
+        },
+        // CDATA
+        {
+            start: {match: /<!\[CDATA\[/},
+            end: {match: /\]\]>|$/},
+            style: "string"
+        },
+        // script / style（保留原始注释状态，需要时可取消注释）
+        // {
+        //     start: {
+        //         start: {match: /<\s*(script)\b/, 1: "keyword"},
+        //         end: {match: />|$/},
+        //         contains: [{include: "tagAttributes"}]
+        //     },
+        //     end: {match: /<\/\s*(script)\s*>/, 1: "keyword"},
+        //     childrenStyle: "default"
+        // },
+        // {
+        //     start: {
+        //         start: {match: /<\s*(style)\b/, 1: "keyword"},
+        //         end: {match: />|$/},
+        //         contains: [{include: "tagAttributes"}]
+        //     },
+        //     end: {match: /<\/\s*(style)\s*>/, 1: "keyword"},
+        //     childrenStyle: "default"
+        // },
+        // pre 标签
+        {
+            start: {
+                start: {match: /<\s*(pre)\b/, 1: "keyword"},
+                end: {match: />|$/},
+                contains: [{include: "tagAttributes"}]
+            },
+            end: {match: /<\/\s*(pre)\s*>/, 1: "keyword"},
+            contains: [{include: "entityReferences"}]
+        },
+        // XML 声明
+        {
+            start: {match: /<\?([^\s\/>]+)/, 1: "keyword"},
+            end: {match: /\?>|$/},
+            style: "annotation",
+            contains: [{include: "tagAttributes"}]
+        },
+        // 开始/自闭合标签
+        {
+            start: {match: /<\s*([^\s\/>]+)/, 1: "keyword"},
+            end: {match: /\/?>|$/},
+            contains: [{include: "tagAttributes"}]
+        },
+        // 结束标签
+        {match: /<\/\s*([^\s>]+)\s*>/, 1: "keyword"},
+        // 实体引用
+        {include: "entityReferences"}
+    ],
+
+    codeFormatter: #BUILT_IN_HTML_FORMATTER#,
+    codeShrinker: #BUILT_IN_HTML_SHRINKER#
+}
