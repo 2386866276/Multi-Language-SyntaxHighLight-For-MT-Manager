@@ -1,0 +1,96 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Java-Kotlin-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["C", ".c"],
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,
+        "method"         #0039e6 #57b3ff,
+        "annotation"     #cc5e00 #ffb373,
+        "nodeReference"  #2e8c00 #63c259,
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,
+        "contorKeyword"  #bd1fcc #ff8ccc,
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,
+        "critical"       #cc2424 #c45959,
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66
+    ],
+
+    defines: [
+        "identifier": /[a-zA-Z_]\w*/,
+
+        "typeName": [
+            // 大写开头视为类型
+            {match: /\b[A-Z]\w*\b/, 0: "type"},
+            // 标准库类型
+            {match: keywordsToRegex(
+                "size_t ssize_t ptrdiff_t intptr_t uintptr_t"
+                "int8_t int16_t int32_t int64_t"
+                "uint8_t uint16_t uint32_t uint64_t"
+                "FILE DIR time_t clock_t"
+            ), 0: "type"}
+        ]
+    ],
+
+    contains: [
+        // 字符串和字符
+        {builtin: #C_QUOTED_STRING#},
+        // 数字
+        {builtin: #C_NUMBER#},
+
+        // #include <...>
+        {match: /(?m)^[ \t]*(#[ \t]*include)(\s*<[^>]+>)/, 1: "contorKeyword", 2: "string"},
+        // #include "..." （指令高亮）
+        {match: /(?m)^[ \t]*(#[ \t]*include)\b/, 1: "contorKeyword"},
+
+        // #define 宏
+        {
+            start: {match: /(?m)^[ \t]*(#[ \t]*define)\s+(/ + include("identifier") + /)/, 1: "contorKeyword", 2: "member"},
+            end: {match: /(?m)(?<!\\)$/},
+            style: "default",
+            contains: [
+                {builtin: #C_QUOTED_STRING#},
+                {builtin: #C_NUMBER#},
+                {match: /\\$/, 0: "contorKeyword"}
+            ]
+        },
+
+        // 其他预处理指令
+        {match: /(?m)^[ \t]*(#[ \t]*\w+)/, 1: "contorKeyword"},
+
+        // C 关键字
+        {match: keywordsToRegex(
+            "auto break case char const continue default do double else enum extern float for"
+            "goto if int long register return short signed sizeof static struct switch typedef"
+            "union unsigned void volatile while inline restrict _Bool _Complex _Imaginary"
+            "_Alignas _Alignof _Atomic _Static_assert _Noreturn _Thread_local _Generic"
+        ), 0: "keyword"},
+
+        // 布尔/空值常量
+        {match: keywordsToRegex("true false NULL"), 0: "number"},
+
+        // typedef
+        {match: /\b(typedef)\s+/, 1: "keyword"},
+        // struct/union/enum 定义名
+        {match: /\b(struct|union|enum)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "type"},
+
+        // 类型名
+        {include: "typeName"},
+
+        // 全大写宏常量
+        {match: /\b[A-Z][A-Z0-9_]{2,}\b/, 0: "member"},
+
+        // 函数调用
+        {match: /\b(/ + include("identifier") + /)(?=\s*\()/, 1: "method"}
+    ]
+}
