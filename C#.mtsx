@@ -1,0 +1,85 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Java-Kotlin-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["C#", ".cs"],
+    ignoreCase: false,
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,
+        "method"         #0039e6 #57b3ff,
+        "annotation"     #cc5e00 #ffb373,
+        "nodeReference"  #2e8c00 #63c259,
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,
+        "contorKeyword"  #bd1fcc #ff8ccc,
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,
+        "critical"       #cc2424 #c45959,
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66
+    ],
+
+    contains: [
+        // 数字（含二进制、十六进制、浮点后缀）
+        {
+            number: "2|8|10|16|F|E|P|_",
+            iSuffixes: "l|u|lu|ul",
+            fSuffixes: "f|d|m"
+        },
+        // 逐字字符串 @"..."
+        {
+            start: {match: /@"/},
+            end: {match: /"/},
+            style: "string",
+            contains: [
+                {match: /""/, 0: "placeholder"}
+            ]
+        },
+        // 内插字符串 $"..."（单行模式）
+        {
+            start: {match: /\$"/},
+            end: {match: /(?m)"|$/},
+            style: "string",
+            contains: [
+                {match: /\{\{/, 0: "placeholder"},
+                {match: /\}\}/, 0: "placeholder"},
+                {match: /\{[^}]*\}/, 0: "member"}
+            ]
+        },
+        // 内插逐字字符串 $@"..."
+        {
+            start: {match: /\$@"/},
+            end: {match: /"/},
+            style: "string",
+            contains: [
+                {match: /""/, 0: "placeholder"},
+                {match: /\{\{/, 0: "placeholder"},
+                {match: /\}\}/, 0: "placeholder"},
+                {match: /\{[^}]*\}/, 0: "member"}
+            ]
+        },
+        // 内置 C 字符串/字符（普通字符串）
+        {builtin: #C_QUOTED_STRING#},
+        // 关键字
+        {match: keywordsToRegex(
+                "abstract as base bool break byte case catch char checked class const continue"
+                "decimal default delegate do double else enum event explicit extern false finally"
+                "fixed float for foreach goto if implicit in int interface internal is lock long"
+                "namespace new null object operator out override params private protected public"
+                "readonly ref return sbyte sealed short sizeof stackalloc static string struct"
+                "switch this throw true try typeof uint ulong unchecked unsafe ushort using virtual"
+                "void volatile while add alias ascending descending dynamic from get global group"
+                "into join let orderby partial partial remove select yield where var async"
+              ), 0: "keyword"},
+        // 预处理指令（#region #if 等）
+        {match: /(?m)^[ \t]*#[ \t]*\S.*$/, 0: "annotation"}
+    ]
+}
