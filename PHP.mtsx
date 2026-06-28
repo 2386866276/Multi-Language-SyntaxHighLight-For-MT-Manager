@@ -1,0 +1,84 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Java-Kotlin-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["PHP", ".php"],
+    ignoreCase: false,
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,
+        "method"         #0039e6 #57b3ff,
+        "annotation"     #cc5e00 #ffb373,
+        "nodeReference"  #2e8c00 #63c259,
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,
+        "contorKeyword"  #bd1fcc #ff8ccc,
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,
+        "critical"       #cc2424 #c45959,
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66
+    ],
+
+    contains: [
+        // 属性注解 #[...]
+        {match: /#\[.*?\]/, 0: "annotation"},
+        // 行注释
+        {match: /#.*/, 0: "comment"},
+        // 双引号字符串（支持转义）
+        {
+            style: "string",
+            start: {match: /"/},
+            end: {match: /"|$/},
+            contains: [
+                {match: /\\./, 0: "placeholder"}
+            ]
+        },
+        // 单引号字符串
+        {
+            style: "string",
+            start: {match: /'/},
+            end: {match: /'|$/},
+            contains: [
+                {match: /\\./, 0: "placeholder"}
+            ]
+        },
+        // 反引号字符串（执行运算符）
+        {
+            style: "string",
+            start: {match: /`/},
+            end: {match: /`|$/},
+            contains: [
+                {match: /\\./, 0: "placeholder"}
+            ]
+        },
+        // 数字（支持各种进制与下划线）
+        {number: "2|8|10|16|F|E|_"},
+        // 变量 $var
+        {match: /\$\w+/, 0: "member"},
+        // PHP 关键字
+        {match: keywordsToRegex(
+                "abstract and as break callable case catch class clone const continue declare"
+                "default do echo else elseif enddeclare endfor endforeach endif endswitch"
+                "endwhile extends final finally fn for foreach function global goto if match"
+                "implements include include_once instanceof insteadof interface namespace"
+                "new or print private protected public readonly require xor require_once"
+                "return static switch throw trait try use var while yield"
+            ), 0: "keyword"
+        },
+        // 常用内置函数（控制流样式突出显示）
+        {match: keywordsToRegex(
+                "__halt_compiler array die empty eval exit isset list unset echo print_r sort"
+                "htmlentities mkdir fopen fread rewind fwrite fclose opendir readdir closedir"
+                "is_dir is_link readlink"
+            ), 0: "contorKeyword"
+        }
+    ]
+}
