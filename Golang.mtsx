@@ -1,0 +1,111 @@
+// @author: 林映雪
+// @modified by: 2386866276@qq.com, pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Multi-Language-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["Golang", ".go"]
+    ignoreCase: false
+
+    comment: {startsWith: "//"}
+    comment: {startsWith: "/*", endsWith: "*/"}
+
+    bracketPairs: ["{}", "[]", "()", "<>"]
+
+    styles: [
+        "funcName"      #3B6C72 #F6C87B
+        "builtinFunc"   #067D17 #629755
+        "builtinType"   #0033B3 #6BA3FF
+        "typeDecl"      #A020F0 #E8B4FF
+        "keyword"       #E62282 #FF7085
+        "constant"      #008C47 #A1FFE0
+        "number"        #0057AE #99CEFF
+        "string"        #996B00 #FFEDA1
+        "strEscape"     #B56300 #FFB366
+        "error"         #D94545 #FF9999
+        "comment"       #708090 #A0B0C0
+        "operator"      #00009C #ABC9FF
+        "label"         #804000 #D9A066
+        "type"          #0066AD #BCE0FF
+        "identifier"    #000000 #FFFFFF
+        "critical"      #CC2424 #C45959
+        "warning"       #BF6308 #B89C7A
+        "notice"        #3D8A17 #8FAB82
+        "placeholder"   #ED9954 #FFBF66
+    ]
+
+    defines: [
+        "identifier": /[a-zA-Z_]\w*/
+
+        "strings": [
+            {
+                start: {match: /"/}
+                end: {match: /(?m)"|$/}
+                style: "string"
+                contains: [
+                    {match: /\\([abfnrtv\\'"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|[0-7]{3})/, 0: "strEscape"}
+                    {match: /\\./, 0: "error"}
+                ]
+            }
+            {match: /(?s)`[^`]*`/, 0: "string"}
+            {
+                start: {match: /'/}
+                end: {match: /(?m)'|$/}
+                style: "string"
+                contains: [
+                    {match: /\\([abfnrtv\\'"]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|[0-7]{3})/, 0: "strEscape"}
+                    {match: /\\./, 0: "error"}
+                ]
+            }
+        ]
+    ]
+
+    contains: [
+        {include: "strings"}
+
+        {number: "2|10|16|F|E|_", iSuffixes: "i", fSuffixes: "i"}
+        {match: /\b0[xX][0-9a-fA-F]+(\.[0-9a-fA-F]*)?[pP][\-+]?\d+i?\b/, 0: "number"}
+        {match: /\b0[oO][0-7]+i?\b/, 0: "number"}
+
+        {match: keywordsToRegex(
+            "break default func interface select case defer go map struct"
+            "chan else goto package switch const fallthrough if range type"
+            "continue for import return var"
+        ), 0: "keyword"}
+
+        {match: keywordsToRegex("true false iota nil"), 0: "constant"}
+
+        {match: keywordsToRegex(
+            "bool byte complex64 complex128 error float32 float64"
+            "int int8 int16 int32 int64 rune string"
+            "uint uint8 uint16 uint32 uint64 uintptr"
+            "any comparable"
+        ), 0: "builtinType"}
+
+        {match: keywordsToRegex(
+            "append cap clear close complex copy delete imag len"
+            "make max min new panic print println real recover"
+        ), 0: "builtinFunc"}
+
+        {match: /\b(type)\s+(/ + include("identifier") + /)/, 1: "keyword", 2: "typeDecl"}
+
+        {
+            group: link
+            contains: [
+                {match: /\b(func)\b\s*/, 1: "keyword"}
+                {match: /\([^)]*\)\s*/}
+                {match: include("identifier"), 0: "funcName"}
+            ]
+        }
+
+        {match: include("identifier") + /(?=\s*\()/, 0: "funcName"}
+
+        {match: /\bimport\s+\.(?=\s*")/, 0: "keyword"}
+
+        {match: include("identifier") + /\.([A-Z]\w*)/, 1: "type"}
+
+        {match: /(?m)^[ \t]*(\w+)(:)(?!=)/, 1: "label", 2: "operator"}
+
+        {match: /\.\(/ + include("identifier") + /\)/, 0: "type"}
+    ]
+}
