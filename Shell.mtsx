@@ -1,0 +1,158 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Multi-Language-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["Shell", ".sh", ".rc", ".bash", ".bashrc", ".ash", ".zsh", ".zshrc"],
+    ignoreCase: false,
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,
+        "method"         #0039e6 #57b3ff,
+        "annotation"     #cc5e00 #ffb373,
+        "nodeReference"  #2e8c00 #63c259,
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,
+        "contorKeyword"  #bd1fcc #ff8ccc,
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,
+        "critical"       #cc2424 #c45959,
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66
+    ],
+
+    comment: {startsWith: "#"},
+
+    defines: [
+        "funNameRegex": /[.\-\/@#:\w]+/,
+        "funNameRegexOrEmpty": /(?:[.\-\/@#:\w]+)?/,
+
+        "arithmeticExpChildren": [
+            {include: "arithmeticExpGroup"},
+            {match: /(?i)\b(0x[0-9A-F]+|0[0-7]+|[1-9][0-9]*#[0-9a-z]+|[0-9]+)\b/, 0: "number"}
+        ],
+
+        "arithmeticExpGroup": {
+            start: {match: /\(/},
+            end: {match: /\)/},
+            contains: [
+                {include: "arithmeticExpChildren"}
+            ]
+        },
+
+        "exp": [
+            {match: /\$(?:[a-zA-Z_]\w*|[0-9#*@?$!\-])/, 0: "member"},
+            {
+                style: "member",
+                start: {match: /(\$)\{/, 1: "keyword"},
+                end: {match: /\}/},
+                contains: [
+                    {include: "exp"},
+                    {include: "str"},
+                    {include: "num"}
+                ]
+            },
+            {
+                style: "default",
+                start: {match: /\$\(\(/, 0: "keyword"},
+                end: {match: /\)\)/, 0: "keyword"},
+                contains: [
+                    {include: "arithmeticExpGroup"}
+                ]
+            },
+            // 修正点：$() 命令替换 - 显式捕获 $() 和命令名
+            {
+                style: "default",
+                start: {match: /(\$\()([.\-\/@#:\w]*)/, 1: "keyword", 2: "method"},
+                end: {match: /\)/, 0: "method"},
+                contains: [
+                    {include: "exp"},
+                    {include: "str"},
+                    {include: "num"},
+                    {match: /(?m)(?<=[;\{\|])[ \t]*(/ + include("funNameRegex") + /)\b(?![ \t]*\+?=)/, 1: "method"}
+                ]
+            },
+            // 修正点：`` 命令替换 - 显式捕获 ` 和命令名
+            {
+                style: "default",
+                start: {match: /(`)([.\-\/@#:\w]*)/, 1: "method", 2: "method"},
+                end: {match: /`/, 0: "method"},
+                contains: [
+                    {include: "exp"},
+                    {include: "str"},
+                    {include: "num"},
+                    {match: /(?m)(?<=[;\{\|])[ \t]*(/ + include("funNameRegex") + /)\b(?![ \t]*\+?=)/, 1: "method"}
+                ]
+            }
+        ],
+
+        "str": [
+            {match: /\\./},
+            {
+                style: "string",
+                start: {match: /"/},
+                end: {match: /"/},
+                contains: [
+                    {match: /\\./, 0: "placeholder"},
+                    {include: "exp"}
+                ]
+            },
+            {
+                style: "string",
+                start: {match: /\$'/},
+                end: {match: /'/},
+                contains: [
+                    {match: /\\(?:[abeEfnrtv\\'"?]|[0-7]{1,3}|u[\da-fA-F]{1,4}|U[\da-fA-F]{1,8}|c[^'])/, 0: "placeholder"},
+                    {match: /\\./, 0: "critical"}
+                ]
+            },
+            {
+                style: "string",
+                start: {match: /'/},
+                end: {match: /'/}
+            }
+        ],
+
+        "num": {match: /(?<![.+*%@\/\-])\b\d+\b(?![.+*%@\/\-])/, 0: "number"},
+
+        "hereDoc": [
+            {
+                start: {match: /<<[ \t]*(?:-[ \t]*)?(?:\\\R[ \t]*)?(['"])(.+?)\1[ \t]*\R/, 2: "keyword"},
+                end: {match: /(?m)^\2$/, 0: "keyword"},
+                style: "string"
+            },
+            {
+                start: {match: /<<[ \t]*(?:-[ \t]*)?(?:\\\R[ \t]*)?\\([^\s'"`$\\|&;<>(){}\[\]]+)[ \t]*\R/, 1: "keyword"},
+                end: {match: /(?m)^\1$/, 0: "keyword"},
+                style: "string"
+            },
+            {
+                start: {match: /<<[ \t]*(?:-[ \t]*)?(?:\\\R[ \t]*)?([^\s'"`$\\|&;<>(){}\[\]]+)[ \t]*\R/, 1: "keyword"},
+                end: {match: /(?m)^\1$/, 0: "keyword"},
+                style: "string",
+                contains: [
+                    {include: "exp"}
+                ]
+            }
+        ]
+    ],
+
+    contains: [
+        {match: /(?s)^\u007fELF.+$/, 0: "default"},
+        {match: /(?m)^[ \t]*#.*$/, 0: "comment"},
+        {include: "exp"},
+        {include: "str"},
+        {include: "num"},
+        {include: "hereDoc"},
+        {match: /(?sm)^[ \t]*:[ \t]*<<\s*-?\s*(/ + include("funNameRegex") + /)\b(.+?)(?-m)(\b\1\b|$)/, 0: "comment"},
+        {match: "(?<![.,/~@%=])" + keywordsToRegex("if then else elif fi for while in do done case esac") + "(?<![.,/~@%=])", 0: "keyword"},
+        {match: /(?m)^[ \t]*(function[ \t]+)?([\w\-]+)[ \t]*\(/, 1: "keyword", 2: "funcName"},
+        {match: /(?m)(?<=(?:[;&\{\|]|(?<!\\\n)^))[ \t]*(/ + include("funNameRegex") + /)\b(?![ \t]*\+?=)/, 1: "method"}
+    ]
+}
