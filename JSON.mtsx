@@ -1,0 +1,79 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Multi-Language-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["JSON", ".json", ".json5", ".hjson", ".jsonl"],
+    ignoreCase: false,
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,
+        "method"         #0039e6 #57b3ff,
+        "annotation"     #cc5e00 #ffb373,
+        "nodeReference"  #2e8c00 #63c259,
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,
+        "contorKeyword"  #bd1fcc #ff8ccc,
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,
+        "critical"       #cc2424 #c45959,
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66
+    ],
+
+    // 注释定义
+    comment: {startsWith: "//"},
+    comment: {startsWith: "/*", endsWith: "*/"},
+    comment: {startsWith: "#"},
+
+    defines: [
+        "escapedChar": [
+            {match: /\\([btnfr"'\/\\]|([0-3]?[0-7])?[0-7]|[uU][0-9a-fA-F]{4}|[xX][0-9a-fA-F]{2})/, 0: "placeholder"},
+            {match: /\\./, 0: "critical"}
+        ]
+    ],
+
+    contains: [
+        // 无引号键名（JSON5 / HJSON）
+        {match: /@?(?:\$|\b[A-Za-z_])[$A-Za-z_\d]*+\s*+(?=:)/, 0: "type"},
+
+        // 双引号键名（纯 match，不含子规则，保证解析正确）
+        {match: /"(?:[^"\\]|\\.)*+"\s*+(?=:)/, 0: "type"},
+
+        // 双引号字符串值
+        {
+            style: "string",
+            start: {match: /"/},
+            end: {match: /(?m)"|$/},
+            contains: [
+                {include: "escapedChar"}
+            ]
+        },
+
+        // 单引号字符串值（JSON5 / HJSON）
+        {
+            style: "string",
+            start: {match: /'/},
+            end: {match: /(?m)'|$/},
+            contains: [
+                {include: "escapedChar"}
+            ]
+        },
+
+        // 数字（兼容 JSON5 格式）
+        {builtin: #JAVA_NUMBER#},
+        {match: /[+-]?Infinity|NaN/, 0: "number"},
+
+        // 关键字
+        {match: keywordsToRegex("true false null"), 0: "keyword"}
+    ],
+
+    codeFormatter: #BUILT_IN_JSON_FORMATTER#,
+    codeShrinker: #BUILT_IN_JSON_SHRINKER#
+}
