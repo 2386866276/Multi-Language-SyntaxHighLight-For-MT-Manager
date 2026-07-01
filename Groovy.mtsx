@@ -1,0 +1,95 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Multi-Language-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["Groovy", ".groovy", ".gradle"],
+    ignoreCase: false,
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,
+        "method"         #0039e6 #57b3ff,
+        "annotation"     #cc5e00 #ffb373,
+        "nodeReference"  #2e8c00 #63c259,
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,
+        "contorKeyword"  #bd1fcc #ff8ccc,
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,
+        "critical"       #cc2424 #c45959,
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66,
+        "strEscape"      #ed9954 #ffbf66
+    ],
+
+    // 注释定义
+    comment: {startsWith: "//"},
+    comment: {startsWith: "/*", endsWith: "*/"},
+
+    defines: [
+        // 双引号字符串（支持插值）
+        "doubleQuotedString": {
+            style: "string",
+            start: {match: /"/},
+            end: {match: /(?m)"|$/},
+            contains: [
+                {builtin: #JAVA_ESCAPED_CHAR#},
+                {include: "strInjection"}
+            ]
+        },
+
+        // 字符串插值 ${...}
+        "strInjection": {
+            start: {match: /\$\{/, 0: "contorKeyword"},
+            end: {match: /\}/, 0: "contorKeyword"},
+            style: "default",
+            contains: [
+                {builtin: #JAVA_NUMBER#},
+                {builtin: #JAVA_SINGLE_QUOTED_STRING#},
+                {include: "doubleQuotedString"},
+                {include: "strInjection"}
+            ]
+        }
+    ],
+
+    contains: [
+        // 三引号字符串（Groovy 多行字符串，不支持插值）
+        {
+            style: "string",
+            start: {match: /"""/},
+            end: {match: /"""/}
+        },
+
+        // 数字（复用 Java 数字匹配器）
+        {builtin: #JAVA_NUMBER#},
+
+        // 单引号字符串（复用 Java 内置匹配器，不含转义处理）
+        {builtin: #JAVA_SINGLE_QUOTED_STRING#},
+
+        // 双引号字符串（支持插值）
+        {include: "doubleQuotedString"},
+
+        // 注解 @Annotation
+        {match: /@\w+(?:\.\w+)*/, 0: "annotation"},
+
+        // 常量（全大写标识符 / 下划线分隔）
+        {match: /\b(?!(?:CRC32|URL)\b)[A-Z][A-Z0-9]+\b(?!\.)(?!\s{0,10}\()/, 0: "member"},
+        {match: /\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\b(?!\.)(?!\s{0,10}\()/, 0: "member"},
+
+        // 关键字（Java 关键字 + Groovy 特有的 def）
+        {match: keywordsToRegex(
+                "while volatile void try true transient throws throw this synchronized switch super strictfp static"
+                "short return public protected private package null new native long interface int instanceof import"
+                "implements if goto for float finally final false extends enum else double do default continue const"
+                "class char catch case byte break boolean assert abstract var record yield sealed non-sealed permits"
+                "when def"
+            ), 0: "keyword"
+        }
+    ]
+}
