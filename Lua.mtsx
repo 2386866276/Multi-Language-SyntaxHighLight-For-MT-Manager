@@ -1,0 +1,76 @@
+// @author：林映雪 @modified by 2386866276@qq.com pangfuga@gmail.com
+// Licensed under the Apache License, Version 2.0
+// https://github.com/2386866276/Multi-Language-SyntaxHighLight-For-MT-Manager
+
+{
+    name: ["Lua", ".lua"],
+    ignoreCase: false,
+
+    styles: [
+        "funcName"       #009999 #66e6ff,
+        "operator"       #00009c #abc9ff,
+        "member"         #0066ad #bce0ff,   // 常量 true/false/nil 及 __ 开头的关键字
+        "method"         #0039e6 #57b3ff,   // 变量（冒号语法）
+        "annotation"     #cc5e00 #ffb373,   // 标签 ::label::
+        "nodeReference"  #2e8c00 #63c259,   // 命名空间（点号后）
+        "comment"        #141414 #dddddd,
+        "docComment"     #282666 #99b3cc,
+        "identifier"     #000000 #ffffff,
+        "string"         #996b00 #ffeda1,
+        "keyword"        #e62282 #ff7085,   // 控制关键字
+        "contorKeyword"  #bd1fcc #ff8ccc,   // __ 关键字 / 特殊内置
+        "number"         #008c47 #a1ffe0,
+        "type"           #009933 #42ffc2,   // 类型关键字 local 等
+        "critical"       #cc2424 #c45959,
+        "warning"        #bf6308 #b89c7a,
+        "notice"         #3d8a17 #8fab82,
+        "placeholder"    #ed9954 #ffbf66
+    ],
+
+    // Lua 注释定义（行注释以 -- 开头）
+    comment: {startsWith: "--", addToContains: false},
+
+    contains: [
+        // shebang 行
+        {match: /^#!.*/, 0: "comment"},
+
+        // 多行注释 --[=[ ... ]=]
+        {match: /--\[(=*)\[(?:(?!\]\1\])[\s\S])*\]\1\]/, 0: "comment"},
+
+        // 单行注释
+        {match: /--(?!\[=*\[).*/, 0: "comment"},
+
+        // 标签 ::label::
+        {match: /::[_a-zA-Z][_a-zA-Z\d]*::/, 0: "annotation"},
+
+        // 以 __ 开头的关键字 / 内部变量
+        {match: /\b__[_a-zA-Z\d]+\b/, 0: "contorKeyword"},
+
+        // 单/双引号字符串（复用 C 语言字符串匹配器）
+        {builtin: #C_QUOTED_STRING#},
+
+        // 长字符串 [=[ ... ]=]
+        {match: /\[(=*)\[(?:(?!\]\1\])[\s\S])*\]\1\]/, 0: "string"},
+
+        // 数字（支持十进制、十六进制、浮点、指数）
+        {number: "10|16|F|E|P"},
+
+        // 类型关键字（local, global, boolean, number, userdata）
+        {match: keywordsToRegex("local global boolean number userdata"), 0: "type"},
+
+        // 常量 true, false, nil
+        {match: keywordsToRegex("true false nil"), 0: "member"},
+
+        // 控制关键字
+        {match: keywordsToRegex("return then while and break goto do else elseif end for function if in not or repeat until thread table"), 0: "keyword"},
+
+        // 命名空间 / 成员访问：.identifier（点号前面不能有点）
+        {match: /(?<!\.)\.(?=[_a-zA-Z])/, 0: "nodeReference"},
+
+        // 方法调用 / 变量：:methodName
+        {match: /(?<!:):[_a-zA-Z][_a-zA-Z0-9]*\b/, 0: "method"},
+
+        // 长度运算符 #
+        {match: /#(?=[_a-zA-Z])/, 0: "operator"}
+    ]
+}
